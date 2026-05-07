@@ -1,0 +1,74 @@
+version: "3.9"
+
+# ============================================================
+# Minception — STAGING
+# Uses MongoDB Atlas (not local container)
+# Deployed automatically by Bitbucket Pipelines on push to develop
+# ============================================================
+
+services:
+
+  mock-service:
+    image: ${DOCKER_REGISTRY}/minception-mock:${IMAGE_TAG:-latest}
+    container_name: minception-mock-staging
+    ports:
+      - "8001:8001"
+    environment:
+      MONGO_URL: ${MONGO_STAGING_URL}
+      FASTAPI_ENV: staging
+      LOG_LEVEL: info
+    networks:
+      - minception_network
+    restart: unless-stopped
+
+  admin-service:
+    image: ${DOCKER_REGISTRY}/minception-admin:${IMAGE_TAG:-latest}
+    container_name: minception-admin-staging
+    ports:
+      - "8002:8002"
+    environment:
+      MONGO_URL: ${MONGO_STAGING_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      MOCK_SERVICE_URL: http://mock-service:8001
+      FASTAPI_ENV: staging
+      LOG_LEVEL: info
+    depends_on:
+      - mock-service
+    networks:
+      - minception_network
+    restart: unless-stopped
+
+  frontend:
+    image: ${DOCKER_REGISTRY}/minception-frontend:${IMAGE_TAG:-latest}
+    container_name: minception-frontend-staging
+    ports:
+      - "3000:80"
+    networks:
+      - minception_network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: minception-nginx-staging
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - mock-service
+      - admin-service
+      - frontend
+    networks:
+      - minception_network
+    restart: unless-stopped
+
+networks:
+  minception_network:
+    driver: bridge

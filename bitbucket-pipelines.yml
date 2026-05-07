@@ -1,0 +1,134 @@
+image: python:3.11-slim
+
+# ============================================================
+# Minception — Bitbucket Pipelines CI/CD
+# develop branch → auto deploy to staging
+# main branch    → manual approval → deploy to production
+# ============================================================
+
+definitions:
+  caches:
+    pip: ~/.cache/pip
+    npm: frontend/node_modules
+
+  steps:
+    - step: &test-mock-service
+        name: Test Mock Service
+        caches:
+          - pip
+        script:
+          - cd mock-service
+          - pip install -r requirements.txt --quiet
+          - pytest app/tests/ -v --tb=short
+        artifacts:
+          - mock-service/.coverage
+
+    - step: &test-admin-service
+        name: Test Admin Service
+        caches:
+          - pip
+        script:
+          - cd admin-service
+          - pip install -r requirements.txt --quiet
+          - pytest app/tests/ -v --tb=short
+        artifacts:
+          - admin-service/.coverage
+
+    - step: &test-frontend
+        name: Test Frontend
+        image: node:18-alpine
+        caches:
+          - npm
+        script:
+          - cd frontend
+          - npm ci
+          - npm run lint
+          - npm test -- --run
+
+    - step: &build-and-push
+        name: Build & Push Docker Images
+        services:
+          - docker
+        script:
+          - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          - export IMAGE_TAG="${BITBUCKET_COMMIT:0:8}"
+          # Build images
+          - docker build -t $DOCKER_REGISTRY/minception-mock:$IMAGE_TAG -f mock-service/Dockerfile mock-service/
+          - docker build -t $DOCKER_REGISTRY/minception-admin:$IMAGE_TAG -f admin-service/Dockerfile admin-service/
+          - docker build -t $DOCKER_REGISTRY/minception-frontend:$IMAGE_TAG -f frontend/Dockerfile frontend/
+          # Tag latest
+          - docker tag $DOCKER_REGISTRY/minception-mock:$IMAGE_TAG $DOCKER_REGISTRY/minception-mock:latest
+          - docker tag $DOCKER_REGISTRY/minception-admin:$IMAGE_TAG $DOCKER_REGISTRY/minception-admin:latest
+          - docker tag $DOCKER_REGISTRY/minception-frontend:$IMAGE_TAG $DOCKER_REGISTRY/minception-frontend:latest
+          # Push all
+          - docker push $DOCKER_REGISTRY/minception-mock:$IMAGE_TAG
+          - docker push $DOCKER_REGISTRY/minception-admin:$IMAGE_TAG
+          - docker push $DOCKER_REGISTRY/minception-frontend:$IMAGE_TAG
+          - docker push $DOCKER_REGISTRY/minception-mock:latest
+          - docker push $DOCKER_REGISTRY/minception-admin:latest
+          - docker push $DOCKER_REGISTRY/minception-frontend:latest
+
+pipelines:
+  # Pull requests — run tests only
+  pull-requests:
+    '**':
+      - parallel:
+          - step: *test-mock-service
+          - step: *test-admin-service
+          - step: *test-frontend
+
+  branches:
+    # develop → staging (auto)
+    develop:
+      - parallel:
+          - step: *test-mock-service
+          - step: *test-admin-service
+          - step: *test-frontend
+      - step: *build-and-push
+      - step:
+          name: Deploy to Staging
+          deployment: staging
+          script:
+            - export IMAGE_TAG="${BITBUCKET_COMMIT:0:8}"
+            - pipe: atlassian/ssh-run:0.4.1
+              variables:
+                SSH_USER: $STAGING_SSH_USER
+                SERVER: $STAGING_SERVER_IP
+                COMMAND: >
+                  cd /opt/minception &&
+                  git pull origin develop &&
+                  export IMAGE_TAG=${IMAGE_TAG} &&
+                  python -m migrations.runner --env staging &&
+                  docker compose -f docker-compose.staging.yml pull &&
+                  docker compose -f docker-compose.staging.yml up -d &&
+                  docker compose -f docker-compose.staging.yml exec -T mock-service curl -f http://localhost:8001/health &&
+                  docker compose -f docker-compose.staging.yml exec -T admin-service curl -f http://localhost:8002/health
+          after-script:
+            - echo "Staging deployment status: $BITBUCKET_EXIT_CODE"
+
+    # main → production (manual trigger)
+    main:
+      - parallel:
+          - step: *test-mock-service
+          - step: *test-admin-service
+          - step: *test-frontend
+      - step: *build-and-push
+      - step:
+          name: Deploy to Production (Manual Approval)
+          deployment: production
+          trigger: manual
+          script:
+            - export IMAGE_TAG="${BITBUCKET_COMMIT:0:8}"
+            - pipe: atlassian/ssh-run:0.4.1
+              variables:
+                SSH_USER: $PROD_SSH_USER
+                SERVER: $PROD_SERVER_IP
+                COMMAND: >
+                  cd /opt/minception &&
+                  git pull origin main &&
+                  export IMAGE_TAG=${IMAGE_TAG} &&
+                  python -m migrations.runner --env prod &&
+                  docker compose -f docker-compose.prod.yml pull &&
+                  docker compose -f docker-compose.prod.yml up -d &&
+                  docker compose -f docker-compose.prod.yml exec -T mock-service curl -f http://localhost:8001/health &&
+                  docker compose -f docker-compose.prod.yml exec -T admin-service curl -f http://localhost:8002/health

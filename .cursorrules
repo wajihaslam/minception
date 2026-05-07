@@ -1,0 +1,62 @@
+# Minception — Cursor Rules
+
+## Project
+API Mock Gateway platform (SIMPAISA). Monorepo with 3 services: mock-service, admin-service, frontend.
+
+## Stack
+- Backend: Python 3.11+ / FastAPI / motor (async MongoDB) / Pydantic v2
+- Frontend: React 18 / TypeScript 5 / Vite / Tailwind CSS / Shadcn/ui / React Query v5
+- Database: MongoDB Atlas (embedded document model — gateways → endpoints → flavors)
+- Auth: JWT (PyJWT) + bcrypt, roles: admin / editor / viewer
+- Docker + nginx reverse proxy
+
+## Services
+- mock-service (port 8001): Stateless request handler. Matches incoming HTTP against MongoDB gateway configs. Read-only.
+- admin-service (port 8002): JWT auth, all CRUD, dashboard stats, user management. Calls /reload on mock-service after writes.
+- frontend (port 3000): React admin dashboard. Only talks to admin-service.
+
+## API Response Format (ALL endpoints)
+```json
+{ "success": true, "data": {}, "error": null }
+{ "success": false, "data": null, "error": { "code": "ERROR_CODE", "message": "..." } }
+```
+
+## Python Rules
+- Always use async/await — all FastAPI routes and DB calls must be async
+- Use motor (AsyncIOMotorClient) for all MongoDB operations in services
+- Use Pydantic v2 with full type hints — no dict returns, always response_model
+- Group routes in APIRouter with prefix and tags
+- Use Depends() for auth: require_role(["admin", "editor"])
+- Raise HTTPException with structured detail: {"code": "...", "message": "..."}
+- Never hardcode connection strings — use config.py / env vars
+
+## TypeScript Rules
+- Strict mode — no `any` types
+- Use React Query for all server state
+- JWT interceptor lives in src/services/api.ts — don't duplicate it
+- All pages use ProtectedRoute wrapper
+- Tailwind classes only — no custom CSS files
+
+## MongoDB Rules
+- Embedded document model: gateways.endpoints[].flavors[]
+- One read per mock request (no N+1)
+- Always include ObjectId for _id
+- Timestamps: created_at, updated_at on all top-level documents
+
+## Git
+- Branch from develop: feature/name/description
+- Never push to main or develop directly
+- Commit format: type(scope): description [migration: NNN]
+
+## Key Files
+- mock-service/app/engine.py — Core flavor matching logic (most important file)
+- migrations/versions/ — All schema migrations (sequential: 001, 002, 003...)
+- SCHEMA-VERSIONS.md — Track all schema changes
+- docker-compose.local.yml — Run everything locally
+
+## Do NOT
+- Add Redis (not in scope)
+- Use synchronous pymongo in route handlers (migrations only)
+- Modify docker-compose.prod.yml without Wajih's approval
+- Skip calling /reload on mock-service after admin writes
+- Commit .env files
