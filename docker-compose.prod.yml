@@ -1,0 +1,87 @@
+version: "3.9"
+
+# ============================================================
+# Minception — PRODUCTION
+# Uses MongoDB Atlas (not local container)
+# Manual approval required — do NOT auto-deploy
+# Only Wajih can modify this file
+# ============================================================
+
+services:
+
+  mock-service:
+    image: ${DOCKER_REGISTRY}/minception-mock:${IMAGE_TAG}
+    container_name: minception-mock-prod
+    ports:
+      - "8001:8001"
+    environment:
+      MONGO_URL: ${MONGO_PROD_URL}
+      FASTAPI_ENV: production
+      LOG_LEVEL: warning
+    networks:
+      - minception_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  admin-service:
+    image: ${DOCKER_REGISTRY}/minception-admin:${IMAGE_TAG}
+    container_name: minception-admin-prod
+    ports:
+      - "8002:8002"
+    environment:
+      MONGO_URL: ${MONGO_PROD_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 60
+      JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      MOCK_SERVICE_URL: http://mock-service:8001
+      FASTAPI_ENV: production
+      LOG_LEVEL: warning
+    depends_on:
+      - mock-service
+    networks:
+      - minception_network
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  frontend:
+    image: ${DOCKER_REGISTRY}/minception-frontend:${IMAGE_TAG}
+    container_name: minception-frontend-prod
+    ports:
+      - "3000:80"
+    networks:
+      - minception_network
+    restart: always
+
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: minception-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - mock-service
+      - admin-service
+      - frontend
+    networks:
+      - minception_network
+    restart: always
+
+networks:
+  minception_network:
+    driver: bridge

@@ -1,0 +1,51 @@
+# Minception — Windsurf Rules
+
+## Project
+Minception — API Mock Gateway for SIMPAISA
+Monorepo: mock-service (FastAPI :8001) + admin-service (FastAPI :8002) + frontend (React :3000)
+Database: MongoDB Atlas with embedded document model
+
+## Core Principle
+This is a **mock API platform**. The core data model is:
+`Gateway` → embedded `Endpoints[]` → embedded `Flavors[]`
+One MongoDB query returns everything needed to serve a mock response.
+
+## Python/FastAPI
+- Python 3.11+ with full type hints
+- Pydantic v2 models — always use response_model on routes
+- motor (AsyncIOMotorClient) for all DB operations — never synchronous
+- All handlers: `async def`
+- Routes use APIRouter with prefix/tags
+- Auth: `Depends(require_role(["admin"]))` pattern
+- Errors: raise HTTPException(status, detail={"code": "...", "message": "..."})
+- Response shape: `{"success": bool, "data": ..., "error": null | {"code", "message"}}`
+
+## TypeScript/React
+- React 18 + TypeScript strict mode
+- React Query (TanStack v5) for server state
+- Axios in src/services/api.ts with JWT interceptor
+- Tailwind + Shadcn/ui components
+- No Redux — auth state via AuthContext only
+
+## MongoDB
+- Embedded: gateways.endpoints[].flavors[] — do NOT split into separate collections
+- Always ObjectId for _id
+- Timestamps: created_at, updated_at
+- Use $push/$pull/$set for nested document operations
+
+## File Structure
+```
+mock-service/app/engine.py     ← flavor matching engine (most critical)
+mock-service/app/mongo.py      ← motor connection
+admin-service/app/auth/        ← JWT + bcrypt + role dependencies
+admin-service/app/routes/      ← CRUD route handlers
+migrations/versions/           ← sequential migration files 001_xxx.py
+```
+
+## Don'ts
+- No Redis
+- No raw pymongo in route handlers
+- No `any` in TypeScript
+- No secrets in source code — env vars only
+- Don't normalize the embedded document model
+- Don't push to main/develop directly
