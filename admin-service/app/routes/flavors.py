@@ -1,16 +1,12 @@
-import logging
 from datetime import datetime, timezone
 
-import httpx
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import require_role
-from app.config import settings
 from app.models.gateway import FlavorCreate, FlavorUpdate
 from app.mongo import get_db
-
-logger = logging.getLogger(__name__)
+from app.services.reload import trigger_reload
 
 router = APIRouter(prefix="/api/admin/gateways", tags=["flavors"])
 
@@ -22,14 +18,6 @@ def _oid(value: str, label: str = "Resource") -> ObjectId:
         return ObjectId(value)
     except Exception:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{label} not found")
-
-
-async def _reload_mock_service() -> None:
-    try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            await client.post(f"{settings.MOCK_SERVICE_URL}/reload")
-    except Exception as exc:
-        logger.warning("Mock service reload failed: %s", exc)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -62,7 +50,7 @@ async def create_flavor(
     if result.matched_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gateway or endpoint not found")
 
-    await _reload_mock_service()
+    await trigger_reload()
 
     response_doc = {**flavor_doc, "id": str(flavor_doc["_id"])}
     response_doc.pop("_id")
@@ -106,7 +94,7 @@ async def update_flavor(
     if result.modified_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Endpoint or flavor not found")
 
-    await _reload_mock_service()
+    await trigger_reload()
 
     # Return the updated flavor by projecting it out of the gateway doc
     gateway = await db.gateways.find_one({"_id": _oid(gid, "Gateway")})
@@ -152,5 +140,5 @@ async def delete_flavor(
     if result.modified_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Flavor not found")
 
-    await _reload_mock_service()
+    await trigger_reload()
     return {"success": True, "data": {"id": fid, "deleted": True}, "error": None}

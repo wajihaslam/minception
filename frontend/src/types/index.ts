@@ -44,6 +44,7 @@ export interface User {
   email: string
   role: 'admin' | 'editor' | 'viewer'
   is_active: boolean
+  created_at: string
 }
 
 export interface LoginRequest {
