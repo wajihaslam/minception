@@ -33,6 +33,7 @@ services:
       - "8001:8001"
     environment:
       MONGO_URL: mongodb://mongodb:27017/api_gateway_dev
+      MONGO_DEV_URL: mongodb://mongodb:27017/api_gateway_dev
       FASTAPI_ENV: development
       LOG_LEVEL: debug
     depends_on:
@@ -41,7 +42,9 @@ services:
     networks:
       - minception_network
     volumes:
-      - ./mock-service:/app  # hot reload
+      - ./mock-service:/app          # hot reload
+      - ./migrations:/app/migrations # migration runner access
+
     command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 
   admin-service:
@@ -53,12 +56,13 @@ services:
       - "8002:8002"
     environment:
       MONGO_URL: mongodb://mongodb:27017/api_gateway_dev
+      MONGO_DEV_URL: mongodb://mongodb:27017/api_gateway_dev
       JWT_SECRET: local-dev-secret-change-in-production
       JWT_ALGORITHM: HS256
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 60
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
       ADMIN_USERNAME: admin
-      ADMIN_EMAIL: admin@simpaisa.com
+      ADMIN_EMAIL: wajih.aslam@simpaisa.com
       ADMIN_PASSWORD: changeme123
       MOCK_SERVICE_URL: http://mock-service:8001
       FASTAPI_ENV: development
@@ -69,7 +73,8 @@ services:
     networks:
       - minception_network
     volumes:
-      - ./admin-service:/app  # hot reload
+      - ./admin-service:/app          # hot reload
+      - ./migrations:/app/migrations  # migration runner access
     command: uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
 
   frontend:
@@ -82,6 +87,7 @@ services:
       - "3000:3000"
     environment:
       VITE_API_BASE_URL: http://localhost:80
+      ADMIN_SERVICE_URL: http://admin-service:8002
     depends_on:
       - admin-service
     networks:

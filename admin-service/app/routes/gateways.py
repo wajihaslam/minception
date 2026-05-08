@@ -1,14 +1,13 @@
 import logging
 from datetime import datetime, timezone
 
-import httpx
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.auth.dependencies import get_current_user, require_role
-from app.config import settings
 from app.models.gateway import GatewayCreate, GatewayUpdate
 from app.mongo import get_db
+from app.services.reload import trigger_reload
 
 logger = logging.getLogger(__name__)
 
@@ -21,15 +20,6 @@ def _serialize(doc: dict) -> dict:
     """Convert MongoDB document to JSON-safe dict (ObjectId → str)."""
     doc["id"] = str(doc.pop("_id"))
     return doc
-
-
-async def _reload_mock_service() -> None:
-    """Signal mock-service to reload configs. Fire-and-forget."""
-    try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            await client.post(f"{settings.MOCK_SERVICE_URL}/reload")
-    except Exception as exc:
-        logger.warning("Mock service reload failed: %s", exc)
 
 
 def _bad_id():
@@ -74,7 +64,7 @@ async def create_gateway(
     }
     result = await db.gateways.insert_one(doc)
     created = await db.gateways.find_one({"_id": result.inserted_id})
-    await _reload_mock_service()
+    await trigger_reload()
     return {"success": True, "data": _serialize(created), "error": None}
 
 
@@ -107,7 +97,7 @@ async def update_gateway(
         _bad_id()
 
     doc = await db.gateways.find_one({"_id": _oid(gateway_id)})
-    await _reload_mock_service()
+    await trigger_reload()
     return {"success": True, "data": _serialize(doc), "error": None}
 
 
@@ -124,5 +114,5 @@ async def delete_gateway(
     if result.matched_count == 0:
         _bad_id()
 
-    await _reload_mock_service()
+    await trigger_reload()
     return {"success": True, "data": {"id": gateway_id, "is_active": False}, "error": None}

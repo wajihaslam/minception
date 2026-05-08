@@ -13,7 +13,9 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8002',
+        // Inside Docker: ADMIN_SERVICE_URL=http://admin-service:8002 (set in docker-compose)
+        // Outside Docker (npm run dev on host): falls back to localhost:8002
+        target: process.env.ADMIN_SERVICE_URL ?? 'http://localhost:8002',
         changeOrigin: true,
       },
     },

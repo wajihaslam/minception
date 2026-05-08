@@ -1,14 +1,13 @@
 import logging
 from datetime import datetime, timezone
 
-import httpx
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import require_role
-from app.config import settings
 from app.models.gateway import EndpointCreate, EndpointUpdate
 from app.mongo import get_db
+from app.services.reload import trigger_reload
 
 logger = logging.getLogger(__name__)
 
@@ -22,14 +21,6 @@ def _oid(value: str, label: str = "Resource") -> ObjectId:
         return ObjectId(value)
     except Exception:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{label} not found")
-
-
-async def _reload_mock_service() -> None:
-    try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            await client.post(f"{settings.MOCK_SERVICE_URL}/reload")
-    except Exception as exc:
-        logger.warning("Mock service reload failed: %s", exc)
 
 
 def _flavor_doc(flavor) -> dict:
@@ -70,7 +61,7 @@ async def create_endpoint(
     if result.matched_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gateway not found")
 
-    await _reload_mock_service()
+    await trigger_reload()
 
     # Return the new endpoint with string ids
     response_doc = {**endpoint_doc, "id": str(endpoint_doc["_id"])}
@@ -120,7 +111,7 @@ async def update_endpoint(
     if result.modified_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Endpoint not found")
 
-    await _reload_mock_service()
+    await trigger_reload()
 
     gateway = await db.gateways.find_one({"_id": _oid(gid, "Gateway")})
     endpoint = next(
@@ -154,5 +145,5 @@ async def delete_endpoint(
     if result.modified_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Endpoint not found")
 
-    await _reload_mock_service()
+    await trigger_reload()
     return {"success": True, "data": {"id": eid, "deleted": True}, "error": None}

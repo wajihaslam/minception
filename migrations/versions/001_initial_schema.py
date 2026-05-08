@@ -48,14 +48,15 @@ async def migrate_up(db, dry_run: bool = False) -> str:
         ops.append("Created request_logs collection")
 
     if not dry_run:
-        await db.request_logs.create_index("timestamp")
-        await db.request_logs.create_index("endpoint_path")
-        await db.request_logs.create_index("method")
-        await db.request_logs.create_index("matched")
-        # TTL index — auto-delete logs older than 90 days
+        # TTL index on timestamp — auto-delete logs older than 90 days.
+        # Also serves as the sort index; do NOT create a separate plain
+        # index on timestamp or MongoDB will raise IndexOptionsConflict.
         await db.request_logs.create_index(
             "timestamp", expireAfterSeconds=60 * 60 * 24 * 90
         )
+        await db.request_logs.create_index("endpoint_path")
+        await db.request_logs.create_index("method")
+        await db.request_logs.create_index("matched")
     ops.append("Created request_logs indexes (with 90-day TTL)")
 
     # ── migration_history ─────────────────────────────────────
