@@ -9,7 +9,7 @@ export interface Flavor {
   name: string
   priority: number
   is_default: boolean
-  match_rules: MatchRules
+  match: MatchRules
   response: {
     status: number
     headers: Record<string, string>

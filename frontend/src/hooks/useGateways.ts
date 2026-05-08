@@ -13,15 +13,15 @@ interface GatewayInput {
 }
 
 async function fetchGateways(): Promise<Gateway[]> {
-  const { data } = await apiClient.get<ApiResponse<{ gateways: Gateway[] }>>('/gateways')
+  const { data } = await apiClient.get<ApiResponse<Gateway[]>>('/admin/gateways/')
   if (!data.success || !data.data) throw new Error(data.error?.message ?? 'Failed to load gateways')
-  return data.data.gateways
+  return data.data
 }
 
 async function fetchGateway(id: string): Promise<Gateway> {
-  const { data } = await apiClient.get<ApiResponse<{ gateway: Gateway }>>(`/gateways/${id}`)
+  const { data } = await apiClient.get<ApiResponse<Gateway>>(`/admin/gateways/${id}`)
   if (!data.success || !data.data) throw new Error(data.error?.message ?? 'Gateway not found')
-  return data.data.gateway
+  return data.data
 }
 
 export function useGateways() {
@@ -44,9 +44,9 @@ export function useCreateGateway() {
 
   return useMutation({
     mutationFn: async (input: GatewayInput) => {
-      const { data } = await apiClient.post<ApiResponse<{ gateway: Gateway }>>('/gateways', input)
+      const { data } = await apiClient.post<ApiResponse<Gateway>>('/admin/gateways/', input)
       if (!data.success || !data.data) throw new Error(data.error?.message ?? 'Failed to create gateway')
-      return data.data.gateway
+      return data.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: GATEWAYS_KEY })
@@ -59,9 +59,9 @@ export function useUpdateGateway() {
 
   return useMutation({
     mutationFn: async ({ id, input }: { id: string; input: Partial<GatewayInput> }) => {
-      const { data } = await apiClient.put<ApiResponse<{ gateway: Gateway }>>(`/gateways/${id}`, input)
+      const { data } = await apiClient.put<ApiResponse<Gateway>>(`/admin/gateways/${id}`, input)
       if (!data.success || !data.data) throw new Error(data.error?.message ?? 'Failed to update gateway')
-      return data.data.gateway
+      return data.data
     },
     onSuccess: (gateway) => {
       queryClient.invalidateQueries({ queryKey: GATEWAYS_KEY })
@@ -76,7 +76,7 @@ export function useDeleteGateway() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`/gateways/${id}`)
+      await apiClient.delete(`/admin/gateways/${id}`)
       return id
     },
     onSuccess: (id) => {

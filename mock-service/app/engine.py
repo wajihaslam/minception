@@ -67,9 +67,8 @@ def match_request(
             ep_method = endpoint.get("method", "").upper()
             ep_path = endpoint.get("path", "")
 
-            if ep_method not in (method, "ANY") and ep_method != "ANY":
-                if ep_method != method:
-                    continue
+            if ep_method != method and ep_method != "ANY":
+                continue
 
             if not _path_matches(ep_path, remaining):
                 continue
@@ -182,10 +181,10 @@ def _match_body(patterns: dict[str, Any], body: Any) -> bool:
 
 
 def _match_query(patterns: dict[str, str], query_params: dict[str, str]) -> bool:
-    """Match query parameters (exact or regex)."""
+    """Match query parameters (full-string regex match)."""
     for key, pattern in patterns.items():
         value = query_params.get(key, "")
-        if not re.search(pattern, value):
+        if not re.fullmatch(pattern, value):
             return False
     return True
 
