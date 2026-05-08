@@ -8,9 +8,12 @@ from app.auth.passwords import hash_password
 from app.config import settings
 from app.mongo import close_client, get_db
 from app.routes.auth import router as auth_router
+from app.routes.dashboard import router as dashboard_router
 from app.routes.endpoints import router as endpoints_router
 from app.routes.flavors import router as flavors_router
 from app.routes.gateways import router as gateways_router
+from app.routes.logs import router as logs_router
+from app.routes.users import router as users_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,6 +61,9 @@ app.include_router(auth_router)
 app.include_router(gateways_router)
 app.include_router(endpoints_router)
 app.include_router(flavors_router)
+app.include_router(dashboard_router)
+app.include_router(logs_router)
+app.include_router(users_router)
 
 
 @app.get("/health")

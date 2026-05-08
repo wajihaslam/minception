@@ -116,8 +116,8 @@ class TestGatewayMatching:
         assert result.response.status == 404
 
     def test_method_mismatch_falls_through(self):
-        # GET on a POST-only endpoint — no match
-        result = match_request("GET", "/api/v1/users/create", {}, {}, {})
+        # DELETE has no endpoint in the sample config — no match
+        result = match_request("DELETE", "/api/v1/users/create", {}, {}, {})
         assert result.matched is False
 
 
