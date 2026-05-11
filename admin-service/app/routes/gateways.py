@@ -17,8 +17,16 @@ router = APIRouter(prefix="/api/admin/gateways", tags=["gateways"])
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def _serialize(doc: dict) -> dict:
-    """Convert MongoDB document to JSON-safe dict (ObjectId → str)."""
-    doc["id"] = str(doc.pop("_id"))
+    """Convert MongoDB document to JSON-safe dict (ObjectId → str), recursively."""
+    if "_id" in doc:
+        doc["id"] = str(doc.pop("_id"))
+    for key, value in doc.items():
+        if isinstance(value, ObjectId):
+            doc[key] = str(value)
+        elif isinstance(value, list):
+            doc[key] = [_serialize(i) if isinstance(i, dict) else i for i in value]
+        elif isinstance(value, dict):
+            doc[key] = _serialize(value)
     return doc
 
 
