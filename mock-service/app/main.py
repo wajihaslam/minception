@@ -15,11 +15,23 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import engine
+from app.config import settings
+from app.logging_handler import DBLogHandler, RequestContextFilter, RequestContextMiddleware
 from app.mongo import get_db, close_client
 from app.routes.health import router as health_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+_min_level = getattr(logging, settings.ERROR_LOG_MIN_LEVEL.upper(), logging.WARNING)
+_db_handler = DBLogHandler(
+    mongo_url=settings.ADMIN_DB_URL,
+    service_name="mock-service",
+    min_level=_min_level,
+)
+_ctx_filter = RequestContextFilter()
+logging.getLogger().addHandler(_db_handler)
+logging.getLogger().addFilter(_ctx_filter)
 
 
 async def load_gateway_configs():
@@ -49,6 +61,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(RequestContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

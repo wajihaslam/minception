@@ -6,10 +6,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.auth.passwords import hash_password
 from app.config import settings
+from app.logging_handler import DBLogHandler, RequestContextFilter, RequestContextMiddleware
 from app.mongo import close_client, get_db
 from app.routes.auth import router as auth_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.endpoints import router as endpoints_router
+from app.routes.error_logs import router as error_logs_router
 from app.routes.flavors import router as flavors_router
 from app.routes.gateways import router as gateways_router
 from app.routes.logs import router as logs_router
@@ -17,6 +19,17 @@ from app.routes.users import router as users_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Attach DB log handler to root logger (additive — stdout logging is preserved)
+_min_level = getattr(logging, settings.ERROR_LOG_MIN_LEVEL.upper(), logging.WARNING)
+_db_handler = DBLogHandler(
+    mongo_url=settings.MONGO_URL,
+    service_name="admin-service",
+    min_level=_min_level,
+)
+_ctx_filter = RequestContextFilter()
+logging.getLogger().addHandler(_db_handler)
+logging.getLogger().addFilter(_ctx_filter)
 
 
 async def _ensure_admin_user() -> None:
@@ -50,6 +63,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(RequestContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -58,6 +72,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(error_logs_router)
 app.include_router(gateways_router)
 app.include_router(endpoints_router)
 app.include_router(flavors_router)

@@ -34,8 +34,10 @@ services:
     environment:
       MONGO_URL: mongodb://mongodb:27017/api_gateway_dev
       MONGO_DEV_URL: mongodb://mongodb:27017/api_gateway_dev
+      ADMIN_DB_URL: mongodb://mongodb:27017/api_gateway_dev
       FASTAPI_ENV: development
       LOG_LEVEL: debug
+      ERROR_LOG_MIN_LEVEL: WARNING
     depends_on:
       mongodb:
         condition: service_healthy
@@ -67,6 +69,8 @@ services:
       MOCK_SERVICE_URL: http://mock-service:8001
       FASTAPI_ENV: development
       LOG_LEVEL: debug
+      ERROR_LOG_MIN_LEVEL: WARNING
+      ERROR_LOG_RETENTION_DAYS: 90
     depends_on:
       mongodb:
         condition: service_healthy
