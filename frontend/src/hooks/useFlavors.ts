@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import apiClient from '@/lib/axios'
-import type { ApiResponse, Flavor, MatchRules } from '@/types'
+import type { ApiResponse, Flavor, FlavorCondition, FlavorParam, MatchRules } from '@/types'
 
 export interface FlavorInput {
   name: string
@@ -13,6 +13,8 @@ export interface FlavorInput {
     body: Record<string, unknown>
     delay_ms: number
   }
+  params?: FlavorParam[]
+  conditions?: FlavorCondition[]
 }
 
 const gatewayKey = (id: string) => ['gateways', id]

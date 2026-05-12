@@ -4,6 +4,29 @@ export interface MatchRules {
   query?: Record<string, string>
 }
 
+export type ParamSource = 'request.header' | 'request.body' | 'request.query' | 'datetime'
+export type DatetimeFormat = 'iso' | 'unix' | 'date' | 'time'
+export type ConditionOperator = 'eq' | 'neq' | 'contains' | 'matches'
+
+export interface FlavorParam {
+  name: string
+  source: ParamSource
+  key: string  // header key | jsonpath | query key | DatetimeFormat
+}
+
+export interface FlavorConditionResponse {
+  status?: number
+  headers?: Record<string, string>
+  body?: Record<string, unknown>
+}
+
+export interface FlavorCondition {
+  param: string
+  operator: ConditionOperator
+  value: string
+  response: FlavorConditionResponse
+}
+
 export interface Flavor {
   id: string
   name: string
@@ -16,6 +39,8 @@ export interface Flavor {
     body: Record<string, unknown>
     delay_ms: number
   }
+  params?: FlavorParam[]
+  conditions?: FlavorCondition[]
 }
 
 export interface Endpoint {
