@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { isAuthenticated, getTokenPayload } from '@/store/auth'
 import LoginPage from '@/pages/LoginPage'
 import DashboardPage from '@/pages/DashboardPage'
+import ErrorLogsPage from '@/pages/ErrorLogsPage'
 import GatewayListPage from '@/pages/GatewayListPage'
 import GatewayDetailPage from '@/pages/GatewayDetailPage'
 import LogsPage from '@/pages/LogsPage'
@@ -68,6 +69,14 @@ export default function AppRouter() {
         element={
           <AdminRoute>
             <UsersPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/error-logs"
+        element={
+          <AdminRoute>
+            <ErrorLogsPage />
           </AdminRoute>
         }
       />

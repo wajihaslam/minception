@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     FASTAPI_ENV: str = "development"
     LOG_LEVEL: str = "debug"
 
+    # Error log handler
+    ERROR_LOG_MIN_LEVEL: str = "WARNING"   # WARNING | ERROR | CRITICAL
+    ERROR_LOG_RETENTION_DAYS: int = 90
+
     class Config:
         env_file = ".env"
         extra = "ignore"
