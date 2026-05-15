@@ -2,7 +2,7 @@
 
 > API Mock Gateway platform — configure realistic mock HTTP endpoints with conditional responses.
 
-Built by [SIMPAISA](https://simpaisa.com) for internal development and testing workflows.
+Built for internal development and testing workflows.
 
 ---
 
@@ -36,7 +36,7 @@ nginx (port 80)
 
 ```bash
 # 1. Clone
-git clone https://bitbucket.org/simpaisa/minception.git
+git clone https://bitbucket.org/minception/minception.git
 cd minception
 
 # 2. Setup
@@ -99,4 +99,4 @@ Commit format: `type(scope): description [migration: NNN]`
 
 ## License
 
-Private — SIMPAISA internal use only.
+Private — Internal use only.

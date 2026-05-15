@@ -72,7 +72,7 @@ async def migrate_up(db, dry_run: bool = False) -> str:
             password_hash = bcrypt.hashpw(b"changeme123", bcrypt.gensalt()).decode("utf-8")
             await db.users.insert_one({
                 "username": "admin",
-                "email": "admin@simpaisa.com",
+                "email": "admin@example.com",
                 "password_hash": password_hash,
                 "role": "admin",
                 "is_active": True,
@@ -85,7 +85,7 @@ async def migrate_up(db, dry_run: bool = False) -> str:
         existing_gw = await db.gateways.find_one({"base_path": "/api/v1"})
         if not existing_gw:
             await db.gateways.insert_one({
-                "name": "Sample Payment Gateway",
+                "name": "Sample API Gateway",
                 "base_path": "/api/v1",
                 "description": "Sample gateway — delete or modify as needed",
                 "is_active": True,

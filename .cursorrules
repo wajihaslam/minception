@@ -1,7 +1,7 @@
 # Minception — Cursor Rules
 
 ## Project
-API Mock Gateway platform (SIMPAISA). Monorepo with 3 services: mock-service, admin-service, frontend.
+API Mock Gateway platform. Monorepo with 3 services: mock-service, admin-service, frontend.
 
 ## Stack
 - Backend: Python 3.11+ / FastAPI / motor (async MongoDB) / Pydantic v2

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # Seeded admin account
     ADMIN_USERNAME: str = "admin"
-    ADMIN_EMAIL: str = "admin@simpaisa.com"
+    ADMIN_EMAIL: str = "admin@example.com"
     ADMIN_PASSWORD: str = "changeme123"
 
     # Inter-service

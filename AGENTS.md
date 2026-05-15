@@ -7,10 +7,10 @@
 
 ## Project Summary
 
-**Minception** is an API Mock Gateway platform built for SIMPAISA.
+**Minception** is an API Mock Gateway platform.
 It lets teams configure mock HTTP endpoints with conditional responses (called "flavors") so frontend and test teams can develop without real backends.
 
-**Repo:** `bitbucket.org/simpaisa/minception` (monorepo)
+**Repo:** `bitbucket.org/minception/minception` (monorepo)
 
 ---
 
@@ -213,4 +213,4 @@ cd frontend && npm test
 
 ---
 
-*Owner: Wajih Aslam (wajih.aslam@simpaisa.com) | Last updated: 2026-05-07*
+*Owner: Wajih Aslam | Last updated: 2026-05-15*

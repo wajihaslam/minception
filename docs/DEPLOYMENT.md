@@ -20,7 +20,7 @@
 
 ### First-Time Setup
 ```bash
-git clone https://bitbucket.org/simpaisa/minception.git
+git clone https://bitbucket.org/minception/minception.git
 cd minception
 git checkout Sprint0
 

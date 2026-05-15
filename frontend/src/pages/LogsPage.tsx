@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
 import apiClient from '@/lib/axios'
 import type { ApiResponse } from '@/types'
@@ -39,7 +39,21 @@ function statusColor(status: number) {
 
 export default function LogsPage() {
   const [skip, setSkip] = useState(0)
+  const [clearing, setClearing] = useState(false)
   const limit = 50
+  const queryClient = useQueryClient()
+
+  async function clearAllLogs() {
+    if (!confirm('Delete all request logs? This cannot be undone.')) return
+    setClearing(true)
+    try {
+      await apiClient.delete('/admin/logs/')
+      setSkip(0)
+      queryClient.invalidateQueries({ queryKey: ['logs'] })
+    } finally {
+      setClearing(false)
+    }
+  }
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['logs', skip],
@@ -60,9 +74,18 @@ export default function LogsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-white">Request Logs</h1>
-          {data && (
-            <span className="text-sm text-gray-400">{data.total.toLocaleString()} total</span>
-          )}
+          <div className="flex items-center gap-3">
+            {data && (
+              <span className="text-sm text-gray-400">{data.total.toLocaleString()} total</span>
+            )}
+            <button
+              onClick={clearAllLogs}
+              disabled={clearing || !data || data.total === 0}
+              className="bg-red-600/20 hover:bg-red-600/30 disabled:opacity-40 text-red-400 border border-red-500/30 text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              {clearing ? 'Clearing…' : 'Clear All'}
+            </button>
+          </div>
         </div>
 
         {isLoading && (

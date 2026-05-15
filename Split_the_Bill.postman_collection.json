@@ -1,0 +1,276 @@
+{
+  "info": {
+    "name": "Split-the-Bill (Mock)",
+    "description": "Mock gateway for the Split-the-Bill app.\n\nBase path: /api\nAll requests hit the Mock Service via nginx at /mock/api/...\n\nFlavor selection via X-Scenario header:\n  (no header)                   → Success (default)\n  X-Scenario: validation_error  → 422 Validation Error\n  X-Scenario: unauthorized      → 401 Unauthorized\n  X-Scenario: not_found         → 404 Not Found\n  X-Scenario: conflict          → 409 Conflict / Already Paid / Expired\n  X-Scenario: server_error      → 500 Internal Server Error",
+    "_postman_id": "split-the-bill-mock",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url",  "value": "http://localhost:80",           "type": "string" },
+    { "key": "mock_base", "value": "{{base_url}}/mock/api",         "type": "string" },
+    { "key": "bill_id",   "value": "bill_01MOCK",                   "type": "string" },
+    { "key": "link_id",   "value": "lnk_03MOCK",                    "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "POST /bills — Create Bill",
+      "description": "Create a bill, split the amount, generate per-person payment links.",
+      "item": [
+        {
+          "name": "Success — Bill Created (201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Dinner at Cosa Nostra\",\n  \"total_amount\": 4500.00,\n  \"participant_count\": 4\n}"
+            },
+            "url": { "raw": "{{mock_base}}/bills", "host": ["{{mock_base}}"], "path": ["bills"] }
+          }
+        },
+        {
+          "name": "Validation Error — Bad Input (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario",   "value": "validation_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"total_amount\": -100,\n  \"participant_count\": 1\n}"
+            },
+            "url": { "raw": "{{mock_base}}/bills", "host": ["{{mock_base}}"], "path": ["bills"] }
+          }
+        },
+        {
+          "name": "Unauthorized (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario",   "value": "unauthorized" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Dinner at Cosa Nostra\",\n  \"total_amount\": 4500.00,\n  \"participant_count\": 4\n}"
+            },
+            "url": { "raw": "{{mock_base}}/bills", "host": ["{{mock_base}}"], "path": ["bills"] }
+          }
+        },
+        {
+          "name": "Not Found — Referenced Resource (404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario",   "value": "not_found" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Dinner at Cosa Nostra\",\n  \"total_amount\": 4500.00,\n  \"participant_count\": 4\n}"
+            },
+            "url": { "raw": "{{mock_base}}/bills", "host": ["{{mock_base}}"], "path": ["bills"] }
+          }
+        },
+        {
+          "name": "Conflict — Duplicate Bill (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario",   "value": "conflict" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Dinner at Cosa Nostra\",\n  \"total_amount\": 4500.00,\n  \"participant_count\": 4\n}"
+            },
+            "url": { "raw": "{{mock_base}}/bills", "host": ["{{mock_base}}"], "path": ["bills"] }
+          }
+        },
+        {
+          "name": "Server Error (500)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario",   "value": "server_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Dinner at Cosa Nostra\",\n  \"total_amount\": 4500.00,\n  \"participant_count\": 4\n}"
+            },
+            "url": { "raw": "{{mock_base}}/bills", "host": ["{{mock_base}}"], "path": ["bills"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "GET /bills/:id — Bill Details",
+      "description": "Fetch a bill and all participant payment statuses.",
+      "item": [
+        {
+          "name": "Success — Partial Payments (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}"] }
+          }
+        },
+        {
+          "name": "Validation Error — Bad ID Format (422)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "validation_error" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}"] }
+          }
+        },
+        {
+          "name": "Unauthorized (401)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "unauthorized" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}"] }
+          }
+        },
+        {
+          "name": "Not Found — Bill Missing (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "not_found" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}"] }
+          }
+        },
+        {
+          "name": "Conflict — Bill Expired (409)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "conflict" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}"] }
+          }
+        },
+        {
+          "name": "Server Error (500)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "server_error" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "GET /payments/:link_id — Payment Link",
+      "description": "Fetch payment link details shown on the QR / redirect page.",
+      "item": [
+        {
+          "name": "Success — Pending Payment (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{mock_base}}/payments/{{link_id}}", "host": ["{{mock_base}}"], "path": ["payments", "{{link_id}}"] }
+          }
+        },
+        {
+          "name": "Validation Error — Bad Link ID (422)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "validation_error" }],
+            "url": { "raw": "{{mock_base}}/payments/{{link_id}}", "host": ["{{mock_base}}"], "path": ["payments", "{{link_id}}"] }
+          }
+        },
+        {
+          "name": "Unauthorized (401)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "unauthorized" }],
+            "url": { "raw": "{{mock_base}}/payments/{{link_id}}", "host": ["{{mock_base}}"], "path": ["payments", "{{link_id}}"] }
+          }
+        },
+        {
+          "name": "Not Found — Link Missing (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "not_found" }],
+            "url": { "raw": "{{mock_base}}/payments/{{link_id}}", "host": ["{{mock_base}}"], "path": ["payments", "{{link_id}}"] }
+          }
+        },
+        {
+          "name": "Conflict — Already Paid (409)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "conflict" }],
+            "url": { "raw": "{{mock_base}}/payments/{{link_id}}", "host": ["{{mock_base}}"], "path": ["payments", "{{link_id}}"] }
+          }
+        },
+        {
+          "name": "Server Error (500)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "server_error" }],
+            "url": { "raw": "{{mock_base}}/payments/{{link_id}}", "host": ["{{mock_base}}"], "path": ["payments", "{{link_id}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "GET /bills/:id/summary — Bill Summary",
+      "description": "Aggregated view: total collected, pending amount, collection %.",
+      "item": [
+        {
+          "name": "Success — Partial Collection (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}/summary", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}", "summary"] }
+          }
+        },
+        {
+          "name": "Validation Error — Bad ID Format (422)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "validation_error" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}/summary", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}", "summary"] }
+          }
+        },
+        {
+          "name": "Unauthorized (401)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "unauthorized" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}/summary", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}", "summary"] }
+          }
+        },
+        {
+          "name": "Not Found — Bill Missing (404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "not_found" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}/summary", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}", "summary"] }
+          }
+        },
+        {
+          "name": "Conflict — Bill Expired (409)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "conflict" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}/summary", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}", "summary"] }
+          }
+        },
+        {
+          "name": "Server Error (500)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Scenario", "value": "server_error" }],
+            "url": { "raw": "{{mock_base}}/bills/{{bill_id}}/summary", "host": ["{{mock_base}}"], "path": ["bills", "{{bill_id}}", "summary"] }
+          }
+        }
+      ]
+    }
+
+  ]
+}

@@ -13,7 +13,7 @@ from app.engine import match_request, load_configs
 SAMPLE_GATEWAYS = [
     {
         "_id": "gw1",
-        "name": "Payments Gateway",
+        "name": "Sample Gateway",
         "base_path": "/api/v1",
         "is_active": True,
         "endpoints": [

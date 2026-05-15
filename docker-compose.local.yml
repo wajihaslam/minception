@@ -64,7 +64,7 @@ services:
       JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 60
       JWT_REFRESH_TOKEN_EXPIRE_DAYS: 7
       ADMIN_USERNAME: admin
-      ADMIN_EMAIL: wajih.aslam@simpaisa.com
+      ADMIN_EMAIL: admin@example.com
       ADMIN_PASSWORD: changeme123
       MOCK_SERVICE_URL: http://mock-service:8001
       FASTAPI_ENV: development

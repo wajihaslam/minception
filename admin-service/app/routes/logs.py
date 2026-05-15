@@ -43,6 +43,15 @@ async def list_logs(
     }
 
 
+@router.delete("/")
+async def clear_all_logs(
+    db=Depends(get_db),
+    _user: dict = Depends(require_role(["admin"])),
+):
+    result = await db.request_logs.delete_many({})
+    return {"success": True, "data": {"deleted_count": result.deleted_count}, "error": None}
+
+
 @router.get("/{log_id}")
 async def get_log(
     log_id: str,

@@ -1,9 +1,9 @@
 # Minception — Claude Code Context
 
 > **Project:** Minception — API Mock Gateway platform  
-> **Repo:** bitbucket.org/simpaisa/minception (monorepo)  
+> **Repo:** bitbucket.org/minception/minception (monorepo)  
 > **Stack:** Python/FastAPI · MongoDB Atlas · React/TypeScript · Docker · nginx  
-> **Team:** 3 developers | **Owner:** Wajih Aslam (wajih.aslam@simpaisa.com)
+> **Team:** 3 developers | **Owner:** Wajih Aslam (wajih.aslam@gmail.com)
 
 ---
 
@@ -358,7 +358,7 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
 
 # Admin Service
 ADMIN_USERNAME=admin
-ADMIN_EMAIL=admin@simpaisa.com
+ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=changeme123
 MOCK_SERVICE_URL=http://mock-service:8001
 

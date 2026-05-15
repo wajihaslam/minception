@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import Layout from '@/components/Layout'
 import GatewayFormModal from '@/components/GatewayFormModal'
 import { useGateways } from '@/hooks/useGateways'
+import apiClient from '@/lib/axios'
 
 function SkeletonCard() {
   return (
@@ -18,8 +20,21 @@ function SkeletonCard() {
 export default function GatewayListPage() {
   const [showModal, setShowModal] = useState(false)
   const [search, setSearch] = useState('')
+  const [clearing, setClearing] = useState(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data: gateways, isLoading, isError, error, refetch } = useGateways()
+
+  async function clearAllGateways() {
+    if (!confirm('Delete ALL gateways and their endpoints/flavors? This cannot be undone.')) return
+    setClearing(true)
+    try {
+      await apiClient.delete('/admin/gateways/')
+      queryClient.invalidateQueries({ queryKey: ['gateways'] })
+    } finally {
+      setClearing(false)
+    }
+  }
 
   const filtered = gateways?.filter((gw) => {
     const q = search.toLowerCase()
@@ -36,15 +51,24 @@ export default function GatewayListPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-white">Gateways</h1>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            New Gateway
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={clearAllGateways}
+              disabled={clearing || !gateways || gateways.length === 0}
+              className="bg-red-600/20 hover:bg-red-600/30 disabled:opacity-40 text-red-400 border border-red-500/30 text-sm font-medium rounded-lg px-4 py-2 transition-colors"
+            >
+              {clearing ? 'Clearing…' : 'Clear All'}
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg px-4 py-2 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              New Gateway
+            </button>
+          </div>
         </div>
 
         {/* Search */}

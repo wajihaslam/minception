@@ -1,7 +1,7 @@
 # Minception — Windsurf Rules
 
 ## Project
-Minception — API Mock Gateway for SIMPAISA
+Minception — API Mock Gateway
 Monorepo: mock-service (FastAPI :8001) + admin-service (FastAPI :8002) + frontend (React :3000)
 Database: MongoDB Atlas with embedded document model
 

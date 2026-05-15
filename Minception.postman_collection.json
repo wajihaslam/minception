@@ -295,7 +295,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"neweditor\",\n  \"email\": \"editor@simpaisa.com\",\n  \"password\": \"securepass123\",\n  \"role\": \"editor\",\n  \"is_active\": true\n}"
+              "raw": "{\n  \"username\": \"neweditor\",\n  \"email\": \"editor@example.com\",\n  \"password\": \"securepass123\",\n  \"role\": \"editor\",\n  \"is_active\": true\n}"
             },
             "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
           }

@@ -250,6 +250,16 @@ async def copy_flavor(
     return {"success": True, "data": _serialize(new_flavor), "error": None}
 
 
+@router.delete("/")
+async def delete_all_gateways(
+    db=Depends(get_db),
+    _user: dict = Depends(require_role(["admin"])),
+):
+    result = await db.gateways.delete_many({})
+    await trigger_reload()
+    return {"success": True, "data": {"deleted_count": result.deleted_count}, "error": None}
+
+
 @router.delete("/{gateway_id}")
 async def delete_gateway(
     gateway_id: str,
