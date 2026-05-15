@@ -1,7 +1,7 @@
 # Minception — Claude Code Context
 
 > **Project:** Minception — API Mock Gateway platform  
-> **Repo:** bitbucket.org/minception/minception (monorepo)  
+> **Repo:** github.com/wajihaslam/minception (monorepo)  
 > **Stack:** Python/FastAPI · MongoDB Atlas · React/TypeScript · Docker · nginx  
 > **Team:** 3 developers | **Owner:** Wajih Aslam (wajih.aslam@gmail.com)
 
@@ -137,7 +137,9 @@ minception/                      ← Monorepo root
 ├── docker-compose.staging.yml
 ├── docker-compose.prod.yml
 ├── SCHEMA-VERSIONS.md
-└── bitbucket-pipelines.yml
+└── .github/
+    └── workflows/
+        └── ci.yml
 ```
 
 ---
@@ -162,7 +164,7 @@ minception/                      ← Monorepo root
 | Database | MongoDB Atlas | M0 free tier |
 | Containerisation | Docker + Compose | v3+ |
 | Reverse Proxy | nginx | 1.24+ |
-| CI/CD | Bitbucket Pipelines | — |
+| CI/CD | GitHub Actions | — |
 
 ---
 

@@ -13,7 +13,7 @@
 #   skips already-applied migrations, and records results in migration_history.
 #
 # NEVER run this against staging or prod manually.
-#   Bitbucket Pipelines runs migrations automatically on those environments
+#   GitHub Actions runs migrations automatically on those environments
 #   using MONGO_STAGING_URL / MONGO_PROD_URL with the --env flag.
 # ==============================================================================
 
