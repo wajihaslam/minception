@@ -8,7 +8,7 @@ Creates:
   - migration_history collection
   - Default admin user
 """
-from datetime import datetime
+from datetime import datetime, timezone
 import bcrypt
 
 
@@ -76,7 +76,7 @@ async def migrate_up(db, dry_run: bool = False) -> str:
                 "password_hash": password_hash,
                 "role": "admin",
                 "is_active": True,
-                "created_at": datetime.utcnow(),
+                "created_at": datetime.now(timezone.utc),
             })
             ops.append("Created default admin user (username: admin, password: changeme123)")
 
@@ -89,8 +89,8 @@ async def migrate_up(db, dry_run: bool = False) -> str:
                 "base_path": "/api/v1",
                 "description": "Sample gateway — delete or modify as needed",
                 "is_active": True,
-                "created_at": datetime.utcnow(),
-                "updated_at": datetime.utcnow(),
+                "created_at": datetime.now(timezone.utc),
+                "updated_at": datetime.now(timezone.utc),
                 "endpoints": [
                     {
                         "path": "/users/create",

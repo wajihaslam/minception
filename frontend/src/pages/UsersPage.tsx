@@ -11,8 +11,11 @@ const ROLE_COLORS: Record<string, string> = {
   viewer: 'bg-gray-500/15 text-gray-300 border-gray-600',
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '—'
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
 function SkeletonRows() {

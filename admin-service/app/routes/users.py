@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -29,6 +29,10 @@ class UserUpdate(BaseModel):
 def _serialize(doc: dict) -> dict:
     doc["id"] = str(doc.pop("_id"))
     doc.pop("password_hash", None)
+    for key in ("created_at", "updated_at"):
+        val = doc.get(key)
+        if isinstance(val, datetime):
+            doc[key] = val.replace(tzinfo=UTC).isoformat().replace("+00:00", "Z") if val.tzinfo is None else val.isoformat().replace("+00:00", "Z")
     return doc
 
 
