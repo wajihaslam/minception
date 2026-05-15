@@ -1,0 +1,505 @@
+{
+  "info": {
+    "name": "Simpaisa Payment API (Mock)",
+    "description": "Auto-generated from Minception gateway \"Simpaisa Payment API\".\n\nBase path: /api/v1\nAll requests hit the Mock Service via nginx.\n\nFlavor selection is driven by the X-Scenario header:\n- (no header)         → Success (default)\n- X-Scenario: validation_error\n- X-Scenario: unauthorized\n- X-Scenario: server_error",
+    "_postman_id": "simpaisa-payment-api-mock",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:80", "type": "string" },
+    { "key": "mock_base", "value": "{{base_url}}/mock/api/v1", "type": "string" },
+    { "key": "payment_id", "value": "pay_01HXMOCKPAYMENT", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth — POST /auth/login",
+      "description": "Authenticate a user and return JWT access + refresh tokens",
+      "item": [
+        {
+          "name": "Login — Success (default)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@simpaisa.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/auth/login",
+              "host": ["{{mock_base}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_access\",\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh\",\n    \"token_type\": \"Bearer\",\n    \"expires_in\": 3600,\n    \"user\": {\n      \"id\": \"usr_01HXMOCK\",\n      \"email\": \"user@simpaisa.com\",\n      \"role\": \"customer\"\n    }\n  },\n  \"error\": null\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Login — Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario", "value": "validation_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@simpaisa.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/auth/login",
+              "host": ["{{mock_base}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Invalid credentials data provided\",\n    \"details\": [\n      { \"field\": \"body\", \"issue\": \"Required field missing\" }\n    ]\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Login — Unauthorized",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario", "value": "unauthorized" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@simpaisa.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/auth/login",
+              "host": ["{{mock_base}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Authentication required. Invalid or expired token.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Login — Server Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Scenario", "value": "server_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@simpaisa.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/auth/login",
+              "host": ["{{mock_base}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INTERNAL_SERVER_ERROR\",\n    \"message\": \"An unexpected error occurred. Please try again later.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payments — POST /payments/initiate",
+      "description": "Initiate a new payment transaction",
+      "item": [
+        {
+          "name": "Initiate Payment — Success (default)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.payment_id) {",
+                  "  pm.collectionVariables.set('payment_id', res.data.payment_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}", "description": "JWT from login" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"PKR\",\n  \"merchant_id\": \"mer_01HXMOCK\",\n  \"description\": \"Order #12345\",\n  \"callback_url\": \"https://myapp.com/payment/callback\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/initiate",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "initiate"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"payment_id\": \"pay_01HXMOCKPAYMENT\",\n    \"status\": \"PENDING\",\n    \"amount\": 1000,\n    \"currency\": \"PKR\",\n    \"created_at\": \"2026-05-14T10:00:00Z\",\n    \"redirect_url\": \"https://pay.simpaisa.com/checkout/pay_01HXMOCKPAYMENT\"\n  },\n  \"error\": null\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Initiate Payment — Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Scenario", "value": "validation_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"PKR\",\n  \"merchant_id\": \"mer_01HXMOCK\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/initiate",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "initiate"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Invalid payment data provided\",\n    \"details\": [\n      { \"field\": \"body\", \"issue\": \"Required field missing\" }\n    ]\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Initiate Payment — Unauthorized",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer invalid_token" },
+              { "key": "X-Scenario", "value": "unauthorized" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"PKR\",\n  \"merchant_id\": \"mer_01HXMOCK\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/initiate",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "initiate"]
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Authentication required. Invalid or expired token.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Initiate Payment — Server Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Scenario", "value": "server_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"PKR\",\n  \"merchant_id\": \"mer_01HXMOCK\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/initiate",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "initiate"]
+            }
+          },
+          "response": [
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INTERNAL_SERVER_ERROR\",\n    \"message\": \"An unexpected error occurred. Please try again later.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payments — GET /payments/{payment_id}",
+      "description": "Fetch the status and details of a payment by ID",
+      "item": [
+        {
+          "name": "Get Payment — Success (default)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"payment_id\": \"pay_01HXMOCKPAYMENT\",\n    \"status\": \"COMPLETED\",\n    \"amount\": 1000,\n    \"currency\": \"PKR\",\n    \"payer\": {\n      \"name\": \"Test User\",\n      \"phone\": \"+923001234567\"\n    },\n    \"merchant\": {\n      \"id\": \"mer_01HXMOCK\",\n      \"name\": \"Test Merchant\"\n    },\n    \"created_at\": \"2026-05-14T10:00:00Z\",\n    \"completed_at\": \"2026-05-14T10:01:12Z\"\n  },\n  \"error\": null\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Payment — Validation Error",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Scenario", "value": "validation_error" }
+            ],
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Invalid payment data provided\",\n    \"details\": [\n      { \"field\": \"body\", \"issue\": \"Required field missing\" }\n    ]\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Payment — Unauthorized",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer invalid_token" },
+              { "key": "X-Scenario", "value": "unauthorized" }
+            ],
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Authentication required. Invalid or expired token.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Payment — Server Error",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Scenario", "value": "server_error" }
+            ],
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}"]
+            }
+          },
+          "response": [
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INTERNAL_SERVER_ERROR\",\n    \"message\": \"An unexpected error occurred. Please try again later.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payments — POST /payments/{payment_id}/refund",
+      "description": "Request a full or partial refund for a completed payment",
+      "item": [
+        {
+          "name": "Refund Payment — Success (default)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"reason\": \"Customer requested refund\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}/refund",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}", "refund"]
+            }
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"refund_id\": \"ref_01HXMOCKREFUND\",\n    \"payment_id\": \"pay_01HXMOCKPAYMENT\",\n    \"status\": \"REFUND_INITIATED\",\n    \"amount\": 1000,\n    \"currency\": \"PKR\",\n    \"reason\": \"Customer requested refund\",\n    \"initiated_at\": \"2026-05-14T11:00:00Z\"\n  },\n  \"error\": null\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Refund Payment — Validation Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Scenario", "value": "validation_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"reason\": \"Customer requested refund\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}/refund",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}", "refund"]
+            }
+          },
+          "response": [
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Invalid refund data provided\",\n    \"details\": [\n      { \"field\": \"body\", \"issue\": \"Required field missing\" }\n    ]\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Refund Payment — Unauthorized",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer invalid_token" },
+              { "key": "X-Scenario", "value": "unauthorized" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"reason\": \"Customer requested refund\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}/refund",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}", "refund"]
+            }
+          },
+          "response": [
+            {
+              "name": "401 Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Authentication required. Invalid or expired token.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Refund Payment — Server Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "X-Scenario", "value": "server_error" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"reason\": \"Customer requested refund\"\n}"
+            },
+            "url": {
+              "raw": "{{mock_base}}/payments/{{payment_id}}/refund",
+              "host": ["{{mock_base}}"],
+              "path": ["payments", "{{payment_id}}", "refund"]
+            }
+          },
+          "response": [
+            {
+              "name": "500 Server Error",
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INTERNAL_SERVER_ERROR\",\n    \"message\": \"An unexpected error occurred. Please try again later.\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

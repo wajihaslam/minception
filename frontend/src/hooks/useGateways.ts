@@ -70,6 +70,22 @@ export function useUpdateGateway() {
   })
 }
 
+export function useUpdateGatewayRaw() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, doc }: { id: string; doc: object }) => {
+      const { data } = await apiClient.put<ApiResponse<Gateway>>(`/admin/gateways/${id}/raw`, doc)
+      if (!data.success || !data.data) throw new Error(data.error?.message ?? 'Failed to save gateway')
+      return data.data
+    },
+    onSuccess: (gateway) => {
+      queryClient.invalidateQueries({ queryKey: GATEWAYS_KEY })
+      queryClient.invalidateQueries({ queryKey: [...GATEWAYS_KEY, gateway.id] })
+    },
+  })
+}
+
 export function useDeleteGateway() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()

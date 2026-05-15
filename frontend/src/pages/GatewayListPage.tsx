@@ -17,14 +17,24 @@ function SkeletonCard() {
 
 export default function GatewayListPage() {
   const [showModal, setShowModal] = useState(false)
+  const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const { data: gateways, isLoading, isError, error, refetch } = useGateways()
+
+  const filtered = gateways?.filter((gw) => {
+    const q = search.toLowerCase()
+    return (
+      gw.name.toLowerCase().includes(q) ||
+      gw.base_path.toLowerCase().includes(q) ||
+      (gw.description ?? '').toLowerCase().includes(q)
+    )
+  }) ?? []
 
   return (
     <Layout>
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-white">Gateways</h1>
           <button
             onClick={() => setShowModal(true)}
@@ -35,6 +45,27 @@ export default function GatewayListPage() {
             </svg>
             New Gateway
           </button>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-6">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search by name, path or description…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-800 text-white text-sm rounded-lg pl-9 pr-4 py-2.5 placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Loading */}
@@ -74,10 +105,17 @@ export default function GatewayListPage() {
           </div>
         )}
 
+        {/* No search results */}
+        {!isLoading && !isError && gateways && gateways.length > 0 && filtered.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-gray-500">No gateways match <span className="text-white">"{search}"</span></p>
+          </div>
+        )}
+
         {/* Grid */}
-        {gateways && gateways.length > 0 && (
+        {filtered.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {gateways.map((gw) => (
+            {filtered.map((gw) => (
               <div
                 key={gw.id}
                 className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-3 hover:border-gray-700 transition-colors"

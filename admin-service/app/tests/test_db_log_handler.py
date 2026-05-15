@@ -137,7 +137,7 @@ class TestDBLogHandler:
         col = MagicMock()
         record = self._make_record(
             logging.ERROR,
-            'Login attempt with password "hunter2" failed',
+            'Login attempt with {"password": "hunter2"} failed',
         )
         record.req_request_id = None
         record.req_user_id = None

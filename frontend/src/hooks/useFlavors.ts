@@ -49,6 +49,20 @@ export function useUpdateFlavor(gatewayId: string, endpointId: string) {
   })
 }
 
+export function useCopyFlavor(gatewayId: string, endpointId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (fid: string) => {
+      const { data } = await apiClient.post<ApiResponse<Flavor>>(
+        `/admin/gateways/${gatewayId}/endpoints/${endpointId}/flavors/${fid}/copy`,
+      )
+      if (!data.success || !data.data) throw new Error(data.error?.message ?? 'Failed to copy flavor')
+      return data.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: gatewayKey(gatewayId) }),
+  })
+}
+
 export function useDeleteFlavor(gatewayId: string, endpointId: string) {
   const qc = useQueryClient()
   return useMutation({

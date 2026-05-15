@@ -23,6 +23,19 @@ def _oid(value: str, label: str = "Resource") -> ObjectId:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{label} not found")
 
 
+def _serialize(doc: dict) -> dict:
+    if "_id" in doc:
+        doc["id"] = str(doc.pop("_id"))
+    for key, value in list(doc.items()):
+        if isinstance(value, ObjectId):
+            doc[key] = str(value)
+        elif isinstance(value, list):
+            doc[key] = [_serialize(i) if isinstance(i, dict) else i for i in value]
+        elif isinstance(value, dict):
+            doc[key] = _serialize(value)
+    return doc
+
+
 def _flavor_doc(flavor) -> dict:
     """Serialise a FlavorCreate into a MongoDB sub-document with a fresh _id."""
     d = flavor.model_dump()
@@ -121,8 +134,7 @@ async def update_endpoint(
     if not endpoint:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Endpoint not found")
 
-    endpoint["id"] = str(endpoint.pop("_id"))
-    return {"success": True, "data": endpoint, "error": None}
+    return {"success": True, "data": _serialize(endpoint), "error": None}
 
 
 @router.delete("/{gid}/endpoints/{eid}")

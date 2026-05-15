@@ -42,39 +42,27 @@ def _make_log_doc(overrides: dict | None = None) -> dict:
 @pytest.fixture
 def client_as_admin():
     """TestClient with DB and auth dependencies overridden for an admin user."""
+    from unittest.mock import patch as _patch
     from app.main import app
     from app.mongo import get_db
-    from app.auth.dependencies import require_role
+    from app.auth.dependencies import get_current_user
 
     mock_db = MagicMock()
+    # Lifespan calls db.users.find_one — must be awaitable
+    mock_db.users.find_one = AsyncMock(return_value={"username": "admin", "role": "admin"})
 
-    # Async aggregation cursor mock
-    async def _aggregate(_pipeline):
-        class _AsyncIter:
-            def __init__(self, items):
-                self._items = items
-                self._idx = 0
-
-            def to_list(self, _n):
-                fut = AsyncMock(return_value=self._items)
-                return fut()
-
-        doc = _make_log_doc()
-        facet_result = {
-            "logs": [doc],
-            "total": [{"count": 1}],
-            "error_type_facets": [{"_id": "ValueError", "count": 1}],
-            "service_facets": [{"_id": "admin-service", "count": 1}],
-            "level_facets": [{"_id": "ERROR", "count": 1}],
-        }
-        return _AsyncIter([facet_result])
-
-    mock_db.error_logs.aggregate = _aggregate
-
-    async def _find_one(query):
-        return _make_log_doc()
-
-    mock_db.error_logs.find_one = _find_one
+    # Motor: aggregate() is sync (returns cursor), to_list() is async
+    facet_result = {
+        "logs": [_make_log_doc()],
+        "total": [{"count": 1}],
+        "error_type_facets": [{"_id": "ValueError", "count": 1}],
+        "service_facets": [{"_id": "admin-service", "count": 1}],
+        "level_facets": [{"_id": "ERROR", "count": 1}],
+    }
+    mock_cursor = MagicMock()
+    mock_cursor.to_list = AsyncMock(return_value=[facet_result])
+    mock_db.error_logs.aggregate = MagicMock(return_value=mock_cursor)
+    mock_db.error_logs.find_one = AsyncMock(return_value=_make_log_doc())
 
     def override_db():
         return mock_db
@@ -83,10 +71,13 @@ def client_as_admin():
         return {"username": "admin", "role": "admin"}
 
     app.dependency_overrides[get_db] = override_db
-    app.dependency_overrides[require_role(["admin"])] = override_admin
+    # Override get_current_user so require_role's inner closure gets the mock user
+    app.dependency_overrides[get_current_user] = override_admin
 
-    with TestClient(app) as c:
-        yield c
+    # Patch the direct get_db() call inside lifespan/_ensure_admin_user
+    with _patch("app.main.get_db", return_value=mock_db):
+        with TestClient(app) as c:
+            yield c
 
     app.dependency_overrides.clear()
 
@@ -94,17 +85,21 @@ def client_as_admin():
 @pytest.fixture
 def client_as_viewer():
     """TestClient overridden as viewer — should get 403 on admin-only routes."""
+    from unittest.mock import patch as _patch
     from app.main import app
-    from app.auth.dependencies import require_role
+    from app.auth.dependencies import get_current_user
+
+    mock_db = MagicMock()
+    mock_db.users.find_one = AsyncMock(return_value={"username": "admin", "role": "admin"})
 
     def override_viewer():
-        from fastapi import HTTPException
-        raise HTTPException(status_code=403, detail="Forbidden")
+        return {"username": "viewer", "role": "viewer"}
 
-    app.dependency_overrides[require_role(["admin"])] = override_viewer
+    app.dependency_overrides[get_current_user] = override_viewer
 
-    with TestClient(app, raise_server_exceptions=False) as c:
-        yield c
+    with _patch("app.main.get_db", return_value=mock_db):
+        with TestClient(app, raise_server_exceptions=False) as c:
+            yield c
 
     app.dependency_overrides.clear()
 

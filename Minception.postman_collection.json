@@ -1,0 +1,420 @@
+{
+  "info": {
+    "name": "Minception API",
+    "description": "API Mock Gateway platform — Admin Service + Mock Service",
+    "_postman_id": "minception-api-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:80", "type": "string" },
+    { "key": "admin_url", "value": "http://localhost:8002", "type": "string" },
+    { "key": "mock_url", "value": "http://localhost:8001", "type": "string" },
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "gateway_id", "value": "", "type": "string" },
+    { "key": "endpoint_id", "value": "", "type": "string" },
+    { "key": "flavor_id", "value": "", "type": "string" },
+    { "key": "user_id", "value": "", "type": "string" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access_token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data) {",
+                  "  pm.collectionVariables.set('access_token', res.data.access_token);",
+                  "  pm.collectionVariables.set('refresh_token', res.data.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"changeme123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data) {",
+                  "  pm.collectionVariables.set('access_token', res.data.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/refresh", "host": ["{{base_url}}"], "path": ["api", "auth", "refresh"] }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/auth/me", "host": ["{{base_url}}"], "path": ["api", "auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Gateways",
+      "item": [
+        {
+          "name": "List Gateways",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/gateways", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways"] }
+          }
+        },
+        {
+          "name": "Create Gateway",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('gateway_id', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My API Gateway\",\n  \"base_path\": \"/api/v1\",\n  \"description\": \"Sample gateway for testing\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways"] }
+          }
+        },
+        {
+          "name": "Get Gateway",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}"] }
+          }
+        },
+        {
+          "name": "Update Gateway",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Gateway Name\",\n  \"description\": \"Updated description\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Gateway",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Endpoints",
+      "item": [
+        {
+          "name": "Create Endpoint",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('endpoint_id', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/users/create\",\n  \"method\": \"POST\",\n  \"description\": \"Create a new user\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints"] }
+          }
+        },
+        {
+          "name": "Update Endpoint",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/users/create\",\n  \"method\": \"POST\",\n  \"description\": \"Updated endpoint description\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints/{{endpoint_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints", "{{endpoint_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Endpoint",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints/{{endpoint_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints", "{{endpoint_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Flavors",
+      "item": [
+        {
+          "name": "Create Flavor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('flavor_id', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Success Response\",\n  \"priority\": 10,\n  \"is_default\": false,\n  \"match\": {\n    \"headers\": {\n      \"Authorization\": \"Bearer admin_.*\"\n    },\n    \"body\": {\n      \"$.role\": \"admin\"\n    },\n    \"query\": {}\n  },\n  \"response\": {\n    \"status\": 201,\n    \"headers\": {\n      \"Content-Type\": \"application/json\"\n    },\n    \"body\": {\n      \"id\": \"usr_001\",\n      \"username\": \"newadmin\",\n      \"role\": \"admin\",\n      \"created\": true\n    },\n    \"delay_ms\": 0\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints/{{endpoint_id}}/flavors", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints", "{{endpoint_id}}", "flavors"] }
+          }
+        },
+        {
+          "name": "Create Default Flavor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Default Response\",\n  \"priority\": 0,\n  \"is_default\": true,\n  \"match\": {\n    \"headers\": {},\n    \"body\": {},\n    \"query\": {}\n  },\n  \"response\": {\n    \"status\": 200,\n    \"headers\": {\n      \"Content-Type\": \"application/json\"\n    },\n    \"body\": {\n      \"success\": true,\n      \"message\": \"Default mocked response\"\n    },\n    \"delay_ms\": 100\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints/{{endpoint_id}}/flavors", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints", "{{endpoint_id}}", "flavors"] }
+          }
+        },
+        {
+          "name": "Update Flavor",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Flavor\",\n  \"priority\": 5,\n  \"is_default\": false,\n  \"match\": {\n    \"headers\": {},\n    \"body\": {},\n    \"query\": { \"version\": \"2\" }\n  },\n  \"response\": {\n    \"status\": 200,\n    \"headers\": {},\n    \"body\": { \"version\": 2 },\n    \"delay_ms\": 50\n  }\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints/{{endpoint_id}}/flavors/{{flavor_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints", "{{endpoint_id}}", "flavors", "{{flavor_id}}"] }
+          }
+        },
+        {
+          "name": "Delete Flavor",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/admin/gateways/{{gateway_id}}/endpoints/{{endpoint_id}}/flavors/{{flavor_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "gateways", "{{gateway_id}}", "endpoints", "{{endpoint_id}}", "flavors", "{{flavor_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data._id) {",
+                  "  pm.collectionVariables.set('user_id', res.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"neweditor\",\n  \"email\": \"editor@simpaisa.com\",\n  \"password\": \"securepass123\",\n  \"role\": \"editor\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"viewer\",\n  \"is_active\": true\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "users", "{{user_id}}"] }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/api/admin/users/{{user_id}}", "host": ["{{base_url}}"], "path": ["api", "admin", "users", "{{user_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Logs",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/dashboard/stats", "host": ["{{base_url}}"], "path": ["api", "admin", "dashboard", "stats"] }
+          }
+        },
+        {
+          "name": "List Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/admin/logs?limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "logs"],
+              "query": [
+                { "key": "limit", "value": "50" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Log Entry",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/api/admin/logs/:log_id", "host": ["{{base_url}}"], "path": ["api", "admin", "logs", ":log_id"], "variable": [{ "key": "log_id", "value": "" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mock Service",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{mock_url}}/health", "host": ["{{mock_url}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "Reload Configs",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "url": { "raw": "{{mock_url}}/reload", "host": ["{{mock_url}}"], "path": ["reload"] }
+          }
+        },
+        {
+          "name": "Mock Request — GET Example",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer my_token_here" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/mock/api/v1/users/create?page=1",
+              "host": ["{{base_url}}"],
+              "path": ["mock", "api", "v1", "users", "create"],
+              "query": [{ "key": "page", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Mock Request — POST Example",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer admin_token_here" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"admin\",\n  \"username\": \"testuser\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/mock/api/v1/users/create", "host": ["{{base_url}}"], "path": ["mock", "api", "v1", "users", "create"] }
+          }
+        },
+        {
+          "name": "Mock Request — Gateway Path (nginx)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/gateway/api/v1/some/path", "host": ["{{base_url}}"], "path": ["gateway", "api", "v1", "some", "path"] }
+          }
+        }
+      ]
+    }
+  ]
+}
