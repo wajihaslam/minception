@@ -3,7 +3,7 @@ version: "3.9"
 # ============================================================
 # Minception — STAGING
 # Uses MongoDB Atlas (not local container)
-# Deployed automatically by Bitbucket Pipelines on push to develop
+# Deployed automatically by GitHub Actions on push to develop
 # ============================================================
 
 services:

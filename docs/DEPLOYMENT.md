@@ -5,7 +5,7 @@
 | Environment | Branch | Trigger | MongoDB |
 |-------------|--------|---------|---------|
 | Local | any | Manual | Local container |
-| Staging | `develop` | Auto (Bitbucket Pipelines) | Atlas `api_gateway_staging` |
+| Staging | `develop` | Auto (GitHub Actions) | Atlas `api_gateway_staging` |
 | Production | `main` | Manual approval | Atlas `api_gateway_prod` |
 
 ---
@@ -20,7 +20,7 @@
 
 ### First-Time Setup
 ```bash
-git clone https://bitbucket.org/minception/minception.git
+git clone https://github.com/wajihaslam/minception.git
 cd minception
 git checkout Sprint0
 
@@ -57,7 +57,7 @@ docker compose -f docker-compose.local.yml down -v
 
 ## Staging Deployment
 
-Staging deploys **automatically** when you push to `develop` via Bitbucket Pipelines.
+Staging deploys **automatically** when you push to `develop` via GitHub Actions.
 
 Pipeline steps:
 1. Run tests (mock-service, admin-service, frontend)
@@ -67,7 +67,7 @@ Pipeline steps:
 5. Run migrations (`python -m migrations.runner --env staging`)
 6. Start containers, smoke test `/health`
 
-**Bitbucket Pipeline variables required** (set in Bitbucket repo settings):
+**GitHub Actions secrets required** (set in GitHub repo → Settings → Secrets and variables → Actions):
 ```
 DOCKER_REGISTRY
 DOCKER_USERNAME
@@ -85,18 +85,18 @@ STAGING_SSH_USER
 
 ## Production Deployment
 
-Production requires **manual approval** in Bitbucket Pipelines — only Wajih can trigger it.
+Production requires **manual approval** in GitHub Actions — only Wajih can approve it.
 
 ### Steps
 1. Merge `develop` → `main` via PR
-2. Bitbucket Pipelines runs tests + builds images automatically
-3. Go to Bitbucket → Pipelines → click **Run** on the manual `Deploy to Production` step
+2. GitHub Actions runs tests + builds images automatically
+3. Go to GitHub → Actions → workflow run → click **Review deployments** → Approve `production`
 4. Monitor: `docker compose -f docker-compose.prod.yml logs -f`
 
 ### Pre-deployment checklist
 - [ ] Staging has been tested and signed off
 - [ ] MongoDB Atlas production backup taken (Atlas auto-backups daily, verify latest)
-- [ ] All tests passing in Bitbucket Pipelines
+- [ ] All tests passing in GitHub Actions
 - [ ] SCHEMA-VERSIONS.md up to date
 - [ ] All 3 developers notified
 
@@ -135,4 +135,4 @@ minception-admin:latest      Admin Service
 minception-frontend:latest   Frontend
 ```
 
-Tagged by commit SHA on each Bitbucket Pipeline build: `minception-mock:a1b2c3d4`
+Tagged by commit SHA on each GitHub Actions build: `minception-mock:a1b2c3d4`

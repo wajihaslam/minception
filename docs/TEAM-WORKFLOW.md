@@ -54,17 +54,17 @@ Sequential numbering: 001, 002, 003... applied in order by the runner.
 ## Release Schedule
 
 - **Monday 10am:** Freeze develop (no new PRs)
-- **Monday 11am:** Deploy develop → staging (Bitbucket auto)
+- **Monday 11am:** Deploy develop → staging (GitHub Actions auto)
 - **Monday-Tuesday:** QA on staging
 - **Tuesday 10am:** Merge develop → main (manual)
-- **Tuesday 11am:** Production deploy (manual approval in Bitbucket)
+- **Tuesday 11am:** Production deploy (manual approval in GitHub Actions)
 
 ## Who Owns What
 
 | Area | Owner |
 |------|-------|
 | docker-compose.prod.yml | Wajih only |
-| Jenkinsfile / bitbucket-pipelines.yml | Wajih only |
+| .github/workflows/ci.yml | Wajih only |
 | SCHEMA-VERSIONS.md | Wajih updates after deploy |
 | migrations/runner.py | Code review required |
 | mock-service/ | Any dev |

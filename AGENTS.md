@@ -10,7 +10,7 @@
 **Minception** is an API Mock Gateway platform.
 It lets teams configure mock HTTP endpoints with conditional responses (called "flavors") so frontend and test teams can develop without real backends.
 
-**Repo:** `bitbucket.org/minception/minception` (monorepo)
+**Repo:** `github.com/wajihaslam/minception` (monorepo)
 
 ---
 

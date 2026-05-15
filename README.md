@@ -36,7 +36,7 @@ nginx (port 80)
 
 ```bash
 # 1. Clone
-git clone https://bitbucket.org/minception/minception.git
+git clone https://github.com/wajihaslam/minception.git
 cd minception
 
 # 2. Setup
@@ -56,9 +56,9 @@ Then open:
 
 ## Team
 
-| Developer | Bitbucket | Role |
-|-----------|----------|------|
-| Wajih Aslam | @wajih | Lead / Arch |
+| Developer | GitHub | Role |
+|-----------|--------|------|
+| Wajih Aslam | @wajihaslam | Lead / Arch |
 | Dev 2 | @dev2 | Backend |
 | Dev 3 | @dev3 | Frontend |
 

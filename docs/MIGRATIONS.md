@@ -100,7 +100,7 @@ git add migrations/versions/002_your_description.py SCHEMA-VERSIONS.md
 git commit -m "feat(schema): add new_field to gateways [migration: 002]"
 ```
 
-Bitbucket Pipelines runs the migration automatically on staging when your PR merges to `develop`.
+GitHub Actions runs the migration automatically on staging when your PR merges to `develop`.
 
 ---
 
@@ -113,7 +113,7 @@ Bitbucket Pipelines runs the migration automatically on staging when your PR mer
 | Never drop a field without a deprecation period | Could break running services |
 | Never rename a field in one step | Split into: add new → backfill → remove old |
 | Migrations are append-only — never edit an applied migration | Runner uses file number to track state |
-| Test on dev before committing | Jenkins/Pipelines will fail otherwise |
+| Test on dev before committing | GitHub Actions will fail otherwise |
 
 ---
 
